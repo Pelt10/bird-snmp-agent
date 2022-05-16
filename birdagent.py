@@ -280,6 +280,13 @@ class BirdAgent(object):
                                     'bgpPeerOutUpdates']:
                                 state["bgp-peers"][bgp_proto][peerprop_name] = SnmpCounter32(
                                     match.group(1))
+                            elif peerprop_name in [
+                                "bgpPeerHoldTime",
+                                "bgpPeerHoldTimeConfigured",
+                                "bgpPeerKeepAlive",
+                                "bgpPeerKeepAliveConfigured"
+                            ]:
+                                state["bgp-peers"][bgp_proto][peerprop_name] = int(float(match.group(1)))
                             else:
                                 print(match.group(1))
                                 state["bgp-peers"][bgp_proto][peerprop_name] = int(
