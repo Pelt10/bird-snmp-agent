@@ -18,6 +18,7 @@ birdagent - agentx code for the bird routing daemon
 """
 from __future__ import print_function
 
+import ipaddress
 from builtins import object
 from adv_agentx import AgentX
 from adv_agentx import SnmpGauge32, SnmpCounter32, SnmpIpAddress
@@ -48,6 +49,8 @@ class BirdAgent(object):
         "openconfirm": 5,
         "established": 6,
     }
+    _re_ipv4 = re.compile(r"^\d+\.\d+\.\d+\.\d+$")
+    _re_ipv6 = re.compile(r"^[\da-fA-F:]+$")
     _re_ipv4_or_v6 = "((\[?((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\]?)|([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+))"
     _re_config_include = re.compile("^include\s*\"([^\"]*)\".*$")
     _re_config_bgp_proto_begin = re.compile(
@@ -136,9 +139,8 @@ class BirdAgent(object):
 
     @staticmethod
     def ipCompare(ip1, ip2):
-        lst1 = "%3s.%3s.%3s.%3s" % tuple(ip1.split("."))
-        lst2 = "%3s.%3s.%3s.%3s" % tuple(ip2.split("."))
-        return (lst1>lst2)-(lst1<lst2)
+        return (ipaddress.ip_address(ip1) > ipaddress.ip_address(ip2)) - \
+            (ipaddress.ip_address(ip1) < ipaddress.ip_address(ip2))
 
     @staticmethod
     def combinedConfigLines(filename):
@@ -245,8 +247,6 @@ class BirdAgent(object):
                             self._re_birdcli_bgp_peer.items()):
                         match = peerprop_re.search(line)
                         if match:
-                            if bgp_proto == "AS212783":
-                                print("%s - %s : %s" % (peerprop_name, peerprop_re.pattern, line))
                             if peerprop_name == 'bgpPeerState':
                                 if not match.group(1).lower() == 'down':
                                     state["bgp-peers"][bgp_proto][peerprop_name] = \
