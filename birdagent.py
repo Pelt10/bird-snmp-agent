@@ -331,7 +331,7 @@ class BirdAgent(object):
             # enrich the state by local+remote ports
             try:
                 srcip, srcport, dstip, dstport = bgp_sessions[state["bgp-peers"][
-                    proto]["bgpPeerRemoteAddr"]]
+                    proto]["bgpPeerIdentifier"]]
             except:
                 print("INFO: Protocol \"%s\" has no active BGP session." % proto)
                 try:
