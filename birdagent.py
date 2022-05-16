@@ -307,6 +307,7 @@ class BirdAgent(object):
                 match = self._re_ss.search(line)
                 if not match:
                     continue
+                print("DEBUG: %s" % match.groups())
                 # key 4-tuples by remote ip: src-addr, src-port, dst-addr, dst-port
                 bgp_sessions[match.group(3)] = match.groups()
         except subprocess.CalledProcessError as e:
