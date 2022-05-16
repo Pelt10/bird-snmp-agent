@@ -310,14 +310,13 @@ class BirdAgent(object):
                 if not match:
                     continue
                 # key 4-tuples by remote ip: src-addr, src-port, dst-addr, dst-port
-                for session in state["bgp-peers"].values():
-                    print("DEBUG: %s - %s" % (session["bgpPeerRemoteAddr"], match.group("dst_addr")))
+                for proto, session in state["bgp-peers"].items():
                     if session["bgpPeerRemoteAddr"] == match.group("dst_addr"):
-                        bgp_sessions[session["bgpPeerIdentifier"]] = (
-                            match.groups("src_addr"),
-                            match.groups("src_port"),
-                            match.groups("dst_addr"),
-                            match.groups("dst_port")
+                        bgp_sessions[proto] = (
+                            match.group("src_addr"),
+                            match.group("src_port"),
+                            match.group("dst_addr"),
+                            match.group("dst_port")
                         )
         except subprocess.CalledProcessError as e:
             print(
@@ -331,8 +330,7 @@ class BirdAgent(object):
 
             # enrich the state by local+remote ports
             try:
-                srcip, srcport, dstip, dstport = bgp_sessions[state["bgp-peers"][
-                    proto]["bgpPeerIdentifier"]]
+                srcip, srcport, dstip, dstport = bgp_sessions[proto]
             except:
                 print("INFO: Protocol \"%s\" has no active BGP session." % proto)
                 try:
