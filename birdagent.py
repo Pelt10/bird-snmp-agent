@@ -281,6 +281,7 @@ class BirdAgent(object):
                                 state["bgp-peers"][bgp_proto][peerprop_name] = SnmpCounter32(
                                     match.group(1))
                             else:
+                                print(match.group(1))
                                 state["bgp-peers"][bgp_proto][peerprop_name] = int(
                                     match.group(1))
                 except Exception as e:
