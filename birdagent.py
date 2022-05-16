@@ -139,8 +139,11 @@ class BirdAgent(object):
 
     @staticmethod
     def ipCompare(ip1, ip2):
-        return (ipaddress.ip_address(ip1) > ipaddress.ip_address(ip2)) - \
-            (ipaddress.ip_address(ip1) < ipaddress.ip_address(ip2))
+        ip1_o = ipaddress.ip_address(ip1)
+        ip2_o = ipaddress.ip_address(ip2)
+        if type(ip1_o) != type(ip2_o):
+            return 1 if type(ip1_o) == ipaddress.IPv4Address else -1
+        return (ip1_o > ip2_o) - (ip1_o < ip2_o)
 
     @staticmethod
     def combinedConfigLines(filename):
