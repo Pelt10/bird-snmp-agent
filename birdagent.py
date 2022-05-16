@@ -254,8 +254,8 @@ class BirdAgent(object):
                     for peerprop_name, peerprop_re in list(
                             self._re_birdcli_bgp_peer.items()):
                         match = peerprop_re.search(line)
-                        print("%s - %s : %s" % (peerprop_name, peerprop_re.pattern, line))
                         if match:
+                            print("%s - %s : %s" % (peerprop_name, peerprop_re.pattern, line))
                             if peerprop_name == 'bgpPeerState':
                                 if not match.group(1).lower() == 'down':
                                     state["bgp-peers"][bgp_proto][peerprop_name] = \
