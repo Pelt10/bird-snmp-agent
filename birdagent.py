@@ -255,7 +255,8 @@ class BirdAgent(object):
                             self._re_birdcli_bgp_peer.items()):
                         match = peerprop_re.search(line)
                         if match:
-                            print("%s - %s : %s" % (peerprop_name, peerprop_re.pattern, line))
+                            if bgp_proto == "AS212783":
+                                print("%s - %s : %s" % (peerprop_name, peerprop_re.pattern, line))
                             if peerprop_name == 'bgpPeerState':
                                 if not match.group(1).lower() == 'down':
                                     state["bgp-peers"][bgp_proto][peerprop_name] = \
@@ -288,7 +289,6 @@ class BirdAgent(object):
                             ]:
                                 state["bgp-peers"][bgp_proto][peerprop_name] = int(float(match.group(1)))
                             else:
-                                print(match.group(1))
                                 state["bgp-peers"][bgp_proto][peerprop_name] = int(
                                     match.group(1))
                 except Exception as e:
