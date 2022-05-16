@@ -60,7 +60,7 @@ class BirdAgent(object):
                      "4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[" \
                      "1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1," \
                      "7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[" \
-                     "1-9]?\d)){3}))|:)))(%.+)?\s)|([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)) "
+                     "1-9]?\d)){3}))|:)))(%.+)?\s)|([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+))"
     _re_config_include = re.compile("^include\s*\"([^\"]*)\".*$")
     _re_config_bgp_proto_begin = re.compile(
         "^protocol bgp ([a-zA-Z0-9_]+).*\{$")
@@ -75,16 +75,16 @@ class BirdAgent(object):
     _re_birdcli_bgp_peer = {
         "bgpPeerIdentifier": re.compile("^\s+Neighbor ID:\s+([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$"),
         "bgpPeerState": re.compile("^\s+BGP state:\s+([a-zA-Z]+)$"),
-        "bgpPeerLocalAddr": re.compile("^\s+Source address:\s+%s$" % _re_ipv4_or_v6),
+        "bgpPeerLocalAddr": re.compile("^\s+Source address:\s+%s" % _re_ipv4_or_v6),
         "bgpPeerLocalAs": re.compile("^\s+Local AS:\s+([0-9]+)$"),
-        "bgpPeerRemoteAddr": re.compile("^\s+Neighbor address:\s+%s$" % _re_ipv4_or_v6),
+        "bgpPeerRemoteAddr": re.compile("^\s+Neighbor address:\s+%s" % _re_ipv4_or_v6),
         "bgpPeerRemoteAs": re.compile("^\s+Neighbor AS:\s+([0-9]+)$"),
         "bgpPeerInUpdates": re.compile("^\s+Import updates:\s+([0-9]+)\s+[0-9\-]+\s+[0-9\-]+\s+[0-9\-]+\s+[0-9\-]+$"),
         "bgpPeerOutUpdates": re.compile("^\s+Export updates:\s+([0-9]+)\s+[0-9\-]+\s+[0-9\-]+\s+[0-9\-]+\s+[0-9\-]+$"),
-        "bgpPeerHoldTime": re.compile("^\s+Hold timer:\s+([0-9]+)\/[0-9]+$"),
-        "bgpPeerHoldTimeConfigured": re.compile("^\s+Hold timer:\s+[0-9]+\/([0-9]+)$"),
-        "bgpPeerKeepAlive": re.compile("^\s+Keepalive timer:\s+([0-9]+)\/[0-9]+$"),
-        "bgpPeerKeepAliveConfigured": re.compile("^\s+Keepalive timer:\s+[0-9]+\/([0-9]+)$"),
+        "bgpPeerHoldTime": re.compile("^\s+Hold timer:\s+([0-9]+.[0-9]+)\/[0-9]+$"),
+        "bgpPeerHoldTimeConfigured": re.compile("^\s+Hold timer:\s+[0-9]+.[0-9]+\/([0-9]+)$"),
+        "bgpPeerKeepAlive": re.compile("^\s+Keepalive timer:\s+([0-9]+.[0-9]+)\/[0-9]+$"),
+        "bgpPeerKeepAliveConfigured": re.compile("^\s+Keepalive timer:\s+[0-9]+.[0-9]+\/([0-9]+)$"),
         "bgpPeerLastError": re.compile("^\s+Last error:\s+([a-zA-Z0-9-_\ ]+)$")}
     _re_birdcli_bgp_end = re.compile("^$")
 
