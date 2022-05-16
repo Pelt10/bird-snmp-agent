@@ -19,8 +19,6 @@ birdagent - agentx code for the bird routing daemon
 from __future__ import print_function
 
 import ipaddress
-from builtins import object
-from adv_agentx import AgentX
 from adv_agentx import SnmpGauge32, SnmpCounter32, SnmpIpAddress
 import sys
 import re
@@ -35,7 +33,6 @@ from tzlocal import get_localzone
 
 
 class BirdAgent(object):
-
     def __init__(self, cfgfile, birdcli, sscmd):
         self.cfgfile = cfgfile
         self.birdcli = birdcli
@@ -53,8 +50,7 @@ class BirdAgent(object):
     _re_ipv6 = re.compile(r"^[\da-fA-F:]+$")
     _re_ipv4_or_v6 = "((\[?((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\]?)|([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+))"
     _re_config_include = re.compile("^include\s*\"([^\"]*)\".*$")
-    _re_config_bgp_proto_begin = re.compile(
-        "^protocol bgp ([a-zA-Z0-9_]+).*\{$")
+    _re_config_bgp_proto_begin = re.compile("^protocol bgp ([a-zA-Z0-9_]+).*\{$")
     _re_config_bgp_holdtime = re.compile("hold time ([0-9]+);")
     _re_config_bgp_keepalive = re.compile("keepalive time ([0-9]+);")
     _re_config_timeformat = re.compile(
@@ -189,8 +185,7 @@ class BirdAgent(object):
         current_time = datetime.now(pytz.utc)
 
         # fetch some data from the configuration:
-        cfg = {}
-        cfg["bgp-peers"] = {}
+        cfg = {"bgp-peers": {}}
         proto = None
         for line in BirdAgent.combinedConfigLines(self.cfgfile):
             if self._re_config_timeformat:
@@ -244,6 +239,7 @@ class BirdAgent(object):
                 state["bgp-peers"][bgp_proto]["bgpPeerFsmEstablishedTime"] = SnmpGauge32(
                     abs(current_time - timestamp).total_seconds())
             if bgp_proto:
+                peerprop_name = None
                 try:
                     for peerprop_name, peerprop_re in list(
                             self._re_birdcli_bgp_peer.items()):
@@ -264,13 +260,15 @@ class BirdAgent(object):
 
                             elif peerprop_name in [
                                 'bgpPeerIdentifier',
-                                    'bgpPeerLocalAddr',
-                                    'bgpPeerRemoteAddr']:
+                                'bgpPeerLocalAddr',
+                                'bgpPeerRemoteAddr'
+                            ]:
                                 state["bgp-peers"][bgp_proto][peerprop_name] = SnmpIpAddress(
                                     match.group(1))
                             elif peerprop_name in [
                                 'bgpPeerInUpdates',
-                                    'bgpPeerOutUpdates']:
+                                'bgpPeerOutUpdates'
+                            ]:
                                 state["bgp-peers"][bgp_proto][peerprop_name] = SnmpCounter32(
                                     match.group(1))
                             elif peerprop_name in [
@@ -285,7 +283,7 @@ class BirdAgent(object):
                                     match.group(1))
                 except Exception as e:
                     print("WARNING: Unable to process \"%s\" as \"%s\" for protocol \"%s\": %s" %
-                          (match.group(1), peerprop_name, bgp_proto, traceback.format_exc(e)))
+                          (match.group(1), peerprop_name, bgp_proto, e))
 
             if self._re_birdcli_bgp_end.search(line):
                 bgp_proto = None
@@ -294,7 +292,9 @@ class BirdAgent(object):
         try:
             state["bgpLocalAs"] = min(local_as)
             if len(local_as) > 1:
-                print("WARNING: multiple local AS: %s; using %i" % (", ".join(str(asn) for asn in local_as), state["bgpLocalAs"]))
+                print("WARNING: multiple local AS: %s; using %i" % (
+                    ", ".join(str(asn) for asn in local_as), state["bgpLocalAs"])
+                      )
         except ValueError:
             print("ERROR: No local AS found, terminating...")
             sys.exit(1)
@@ -310,12 +310,14 @@ class BirdAgent(object):
                 if not match:
                     continue
                 # key 4-tuples by remote ip: src-addr, src-port, dst-addr, dst-port
-                bgp_sessions[match.group("dst_addr")] = (
-                    match.groups("src_addr"),
-                    match.groups("src_port"),
-                    match.groups("dst_addr"),
-                    match.groups("dst_port")
-                )
+                for session in state["bgp-peers"].values():
+                    if session["bgpPeerRemoteAddr"] == match.group("dst_addr"):
+                        bgp_sessions[session["bgpPeerIdentifier"]] = (
+                            match.groups("src_addr"),
+                            match.groups("src_port"),
+                            match.groups("dst_addr"),
+                            match.groups("dst_port")
+                        )
         except subprocess.CalledProcessError as e:
             print(
                 "ERROR: Error executing \"ss\" command [%s], terminating..." % e)
@@ -323,7 +325,8 @@ class BirdAgent(object):
 
         # match the connection 4-tuples with bgp-state
         for proto in list(state["bgp-peers"].keys()):
-            if not state["bgp-peers"][proto]: continue
+            if not state["bgp-peers"][proto]:
+                continue
 
             # enrich the state by local+remote ports
             try:
@@ -345,7 +348,8 @@ class BirdAgent(object):
                     dstip != state["bgp-peers"][proto]["bgpPeerRemoteAddr"]:
                 print(
                     "WARNING: Protocol \"%s\" has mismatch between the configuration file (local: %s, neighbor %s) and the active BGP session (local: %s, neighbor: %s)" %
-                    (proto, state["bgp-peers"][proto]["bgpPeerLocalAddr"], state["bgp-peers"][proto]["bgpPeerRemoteAddr"], srcip, dstip))
+                    (proto, state["bgp-peers"][proto]["bgpPeerLocalAddr"],
+                     state["bgp-peers"][proto]["bgpPeerRemoteAddr"], srcip, dstip))
                 continue
 
             # populate the ports

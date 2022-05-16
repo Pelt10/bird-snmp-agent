@@ -37,6 +37,9 @@ import locale
 # export names
 __all__ = [
     'AgentX',
+    'SnmpGauge32',
+    'SnmpCounter32',
+    'SnmpIpAddress',
 ]
 
 # snmp agentx library
